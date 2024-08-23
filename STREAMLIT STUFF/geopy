@@ -1,0 +1,12 @@
+from geopy.geocoders import Nominatim
+from geopy import geocoders
+
+loc = Nominatim(user_agent = 'Geopy Library')
+
+getLoc = loc.geocode('321 W 125th St, New York NY 10027')
+
+
+print(getLoc.address)
+
+print(getLoc.latitude)
+print(getLoc.longitude)
