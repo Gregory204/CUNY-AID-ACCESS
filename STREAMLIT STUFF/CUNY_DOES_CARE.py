@@ -1,39 +1,6 @@
 import pandas as pd
 import numpy as np
-
-# Haversine function to calculate distance
-def haversine(lat1, lon1, lat2, lon2):
-    R = 6371  # Radius of Earth in kilometers
-    phi1, phi2 = np.radians(lat1), np.radians(lat2)
-    delta_phi = np.radians(lat2 - lat1)
-    delta_lambda = np.radians(lon2 - lon1)
-    
-    a = np.sin(delta_phi / 2)**2 + np.cos(phi1) * np.cos(phi2) * np.sin(delta_lambda / 2)**2
-    c = 2 * np.arctan2(np.sqrt(a), np.sqrt(1 - a))
-    return R * c
-
-# Function to find the closest school
-def find_closest_school(location, school_map):
-    min_distance = float('inf')
-    closest_school = None
-    
-    # print(f"\nDistances from {location['Borough']}:")
-    
-    # iterate through the list of schools items
-    for school, (school_lat, school_lon) in school_map.items():
-        
-        # calculate distance using haversine function
-        distance = haversine(location['Latitude'], location['Longitude'], school_lat, school_lon)
-        
-        # TESTING
-        # print(f"Distance to {school}: {distance:.2f} km")
-        
-        # swap until we find the closest school for specific location/rat
-        if distance < min_distance:
-            min_distance = distance
-            closest_school = school
-    
-    return closest_school 
+from CUNY_FUNCTIONS import haversine, find_closest_school
 
 # READ IN CSV found at: https://data.cityofnewyork.us/Social-Services/Directory-Of-Homeless-Drop-In-Centers/bmxf-3rd4/data_preview
 df_homeless = pd.read_csv('Directory_Of_Homeless_Drop-_In_Centers_20240821.csv')
@@ -106,6 +73,7 @@ All_Cuny_Colleges = {'School Name_Longitude_Latitude' :
     'Guttman Community College' : (40.753085075885885, -73.98393315408056),
     'Hunter College' : (40.767856030242825, -73.96451868134449),
     'John Jay College' : (40.77078057677287, -73.98922347116479),
+    'CUNY School of Labor and Urban Studies': (40.754830, -73.981740),
     'Bronx Community College' : (40.85751548111299, -73.91292584723408),
     'Hostos Community College' : (40.817419002533605, -73.92720556500196),
     'Lehman College' : (40.872893348653186, -73.89450564981139),
@@ -123,6 +91,15 @@ All_Cuny_Colleges = {'School Name_Longitude_Latitude' :
 
 # print(pd.DataFrame(All_Cuny_Colleges).nunique()) 23 CUNY COLLLEGES
 
+college_names = list(All_Cuny_Colleges['School Name_Longitude_Latitude'].keys())
+coordinates = list(All_Cuny_Colleges['School Name_Longitude_Latitude'].values())
+
+college_df = pd.DataFrame({
+    'College Name': college_names,
+    'Latitude': [coord[0] for coord in coordinates],
+    'Longitude': [coord[1] for coord in coordinates]
+})
+    
 # CONVERT MANHATTAN DICTIONARY INTO A DATA FRAME
 df_Manhattan_Colleges = pd.DataFrame(Manhattan_Colleges)
 
@@ -295,19 +272,6 @@ df_homeless_manhattan_colleges = pd.DataFrame(homeless_manhattan_colleges_array,
 
 # FINALLY MERGE THE 2 DATA FRAMES TO GET ALL INFORMATION ON CLOSEST COLLEGE AND CENTER NAME
 df_Manhattan_Help = pd.merge(df_homeless_manhattan_colleges, df_homeless_manhattan)
-
-# PRINT FUNCTION FOR TXT FILES USED FOR ANALYSIS
-def print_shelter_details(df):
-    for index, row in df.iterrows():
-        print(f"Center Name: {row['Center Name']}")
-        print(f"Address: {row['Address']}")
-        print(f"Borough: {row['Borough']}")
-        print(f"Closest CUNY College : {row['Closest College']}")
-        # print(f"Latitude: {row['Latitude']}")
-        # print(f"Longitude: {row['Longitude']}")
-        print(f"Phone Number: {row['Phone Number']}")
-        print(f"CUNY Recommended: {row['CUNY Recommended']}")
-        print("-" * 40)  # Separator line for better readability
     
 # FILL IN NA WITH 0 to represent CUNY CARES RECOMMENDED
 df_Manhattan_Help.fillna({'CUNY Recommended' : 0}, inplace=True)
